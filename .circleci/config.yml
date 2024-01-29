@@ -56,6 +56,8 @@ jobs:
               pr_comment_url=$(echo $pr_response | jq -r ".[]._links.comments.href")
             fi
 
+            PLAN_TXT=$(cat plan.txt)
+
             curl 
               --request POST "$pr_comment_url" \
               --location 
@@ -64,10 +66,10 @@ jobs:
               --data-raw '{
             "body": "
             <details>
-              <summary>Terragrunt Apply - $(pwd)</summary>
+              <summary>Terragrunt Plan</summary>
 
             ```
-            $(cat plan.txt)
+            $PLAN_TXT
             ```
               
             </details>"
