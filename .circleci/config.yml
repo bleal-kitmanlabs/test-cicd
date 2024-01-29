@@ -32,6 +32,6 @@ jobs:
             PATH="$HOME/.tfenv/bin:$HOME/.tgenv/bin:$PATH"
             cd global/organizations/sandbox/eu-west-1/null-resource
             TG_VERSION=$(cat .terragrunt-version)
-            tgenv install $TG_VERSION 
+            tgenv install v$TG_VERSION 
             tgenv use $TG_VERSION
             terragrunt plan
