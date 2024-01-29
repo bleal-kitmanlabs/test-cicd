@@ -1,4 +1,12 @@
 version: 2
+
+workflows:
+  version: 2
+  build-and-deploy:
+    jobs:
+      - build:
+          context: build-deploy
+
 jobs:
   build:
     docker:
@@ -19,13 +27,7 @@ jobs:
             git clone https://github.com/cunymatthieu/tgenv.git $HOME/.tgenv
 
       - run:
-          name: Terragrunt Plan
+          name: Terragrunt Plan - Forcing Path
           command: |
+            cd global/organizations/sandbox/eu-west-1/null-resource
             terragrunt plan
-
-workflows:
-  version: 2
-  build-and-deploy:
-    jobs:
-      - build:
-          context: build-deploy
