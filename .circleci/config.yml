@@ -31,5 +31,5 @@ jobs:
           command: |
             PATH="$HOME/.tfenv/bin:$HOME/.tgenv/bin:$PATH"
             cd global/organizations/sandbox/eu-west-1/null-resource
-            tgenv use .terragrunt-version
+            tgenv install $(.terragrunt-version) && tgenv use $(.terragrunt-version)
             terragrunt plan
