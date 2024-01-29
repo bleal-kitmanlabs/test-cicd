@@ -30,4 +30,5 @@ jobs:
           name: Terragrunt Plan - Forcing Path
           command: |
             cd global/organizations/sandbox/eu-west-1/null-resource
+            tgenv use .terragrunt-version
             terragrunt plan
