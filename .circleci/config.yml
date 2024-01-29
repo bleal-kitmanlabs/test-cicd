@@ -65,5 +65,5 @@ jobs:
               -u $GH_USER:$GH_TOKEN \
               --header 'Content-Type: application/json' \
               --data-raw '{
-            "body": "<details>\n  <summary>Terragrunt Plan</summary>\n\n```\n$PLAN_TXT\n```\n\n</details>"
+            "body": "<details>\n  <summary>Terragrunt Plan</summary>\n\n```\n${PLAN_TXT}\n```\n\n</details>"
             }'
