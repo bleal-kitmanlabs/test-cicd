@@ -13,9 +13,15 @@ jobs:
       - checkout
 
       - run:
-          name: Checkout Elon
+          name: Install tfenv and tgenv
           command: |
-            echo "test"
+            git clone --depth=1 https://github.com/tfutils/tfenv.git $HOME/.tfenv
+            git clone https://github.com/cunymatthieu/tgenv.git $HOME/.tgenv
+
+      - run:
+          name: Terragrunt Plan
+          command: |
+            terragrunt plan
 
 workflows:
   version: 2
