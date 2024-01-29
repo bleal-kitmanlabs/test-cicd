@@ -60,11 +60,12 @@ jobs:
 
             PLAN_TXT=$(awk '{printf "%s\\n", $0}' plan.txt )
 
+            DATA_RAW="<details>\n  <summary>Terragrunt Plan</summary>\n\n```\n{{PLAN_TXT}}\n```\n\n</details>"
+
             curl --request POST "$pr_comment_url" \
               --location \
               -u $GH_USER:$GH_TOKEN \
               --header 'Content-Type: application/json' \
-              --variable %PLANTXT=PLAN_TXT
               --data-raw '{
-            "body": "<details>\n  <summary>Terragrunt Plan</summary>\n\n```\n{{PLANTXT}}\n```\n\n</details>"
-            }'
+                "body": $DATA_RAW
+              }'
