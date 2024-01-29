@@ -60,7 +60,7 @@ jobs:
 
             PLAN_TXT=$(awk '{printf "%s\\n", $0}' plan.txt )
 
-            cat $PLAN_TXT
+            echo $PLAN_TXT
 
             # DATA_RAW="<details>\n  <summary>Terragrunt Plan</summary>\n\n```\n$PLAN_TXT\n```\n\n</details>"
 
