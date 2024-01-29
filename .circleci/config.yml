@@ -13,7 +13,7 @@ jobs:
       - checkout
 
       - run:
-          name: Test
+          name: Checkout Elon
           command: |
             echo "test"
 
