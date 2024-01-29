@@ -42,8 +42,7 @@ jobs:
             TG_VERSION=$(cat .terragrunt-version)
             install_tg_version $TG_VERSION
             tgenv use v$TG_VERSION
-            terragrunt plan -o plan.out
-            cat plan.out
+            terragrunt plan -out="$(pwd)/plan.out" | tee plan.txt
 
       - run:
           name: Post Stats to GitHub PR
