@@ -56,9 +56,19 @@ jobs:
               pr_comment_url=$(echo $pr_response | jq -r ".[]._links.comments.href")
             fi
 
-            curl --location --request POST "$pr_comment_url" \
-            -u $GH_USER:$GH_TOKEN \
-            --header 'Content-Type: application/json' \
-            --data-raw '{
-            "body": "This would be the data to add. Test!"
+            curl 
+              --request POST "$pr_comment_url" \
+              --location 
+              -u $GH_USER:$GH_TOKEN \
+              --header 'Content-Type: application/json' \
+              --data-raw '{
+            "body": "
+            <details>
+              <summary>Terragrunt Apply - $(pwd)</summary>
+
+            ```
+            $(cat plan.txt)
+            ```
+              
+            </details>"
             }'
