@@ -58,14 +58,16 @@ jobs:
               pr_comment_url=$(echo $pr_response | jq -r ".[]._links.comments.href")
             fi
 
-            PLAN_TXT=$(awk '{printf "%s\\n", $0}' plan.txt )
+            cat plan.txt
 
-            DATA_RAW="<details>\n  <summary>Terragrunt Plan</summary>\n\n```\n$PLAN_TXT\n```\n\n</details>"
+            # PLAN_TXT=$(awk '{printf "%s\\n", $0}' plan.txt )
 
-            curl --request POST "$pr_comment_url" \
-              --location \
-              -u $GH_USER:$GH_TOKEN \
-              --header 'Content-Type: application/json' \
-              --data-raw '{
-                "body": $DATA_RAW
-              }'
+            # DATA_RAW="<details>\n  <summary>Terragrunt Plan</summary>\n\n```\n$PLAN_TXT\n```\n\n</details>"
+
+            # curl --request POST "$pr_comment_url" \
+            #   --location \
+            #   -u $GH_USER:$GH_TOKEN \
+            #   --header 'Content-Type: application/json' \
+            #   --data-raw '{
+            #     "body": $DATA_RAW
+            #   }'
