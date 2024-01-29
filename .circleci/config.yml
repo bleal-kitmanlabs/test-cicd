@@ -60,9 +60,8 @@ jobs:
 
             PLAN_TXT=$(cat plan.txt)
 
-            curl 
-              --request POST "$pr_comment_url" \
-              --location 
+            curl --request POST "$pr_comment_url" \
+              --location \
               -u $GH_USER:$GH_TOKEN \
               --header 'Content-Type: application/json' \
               --data-raw '{
