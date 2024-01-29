@@ -58,20 +58,20 @@ jobs:
               pr_comment_url=$(echo $pr_response | jq -r ".[]._links.comments.href")
             fi
 
-            PLAN_TXT=$(cat plan.txt)
+            PLAN_TXT=$(awk '{printf "%s\\n", $0}' plan.txt )
 
             curl --request POST "$pr_comment_url" \
               --location \
               -u $GH_USER:$GH_TOKEN \
               --header 'Content-Type: application/json' \
               --data-raw '{
-            "body": "
-            <details>
-              <summary>Terragrunt Plan</summary>
+            "body": " \
+            <details> \
+              <summary>Terragrunt Plan</summary> \
 
-            ```
-            $PLAN_TXT
-            ```
+            ``` \
+            $PLAN_TXT \
+            ```\
               
-            </details>"
-            }'
+            </details>\
+            "}'
