@@ -63,7 +63,7 @@ jobs:
 
             # DATA_RAW="<details><br \\><summary>Terragrunt Plan </summary><br \\><br \\> \`\`\` $PLAN_TXT \`\`\` <br><br></details>"
 
-            DATA_RAW="Este é um comentário de várias linhas usando Markdown.\n\n- Lista item 1\n- Lista item 2\n\n**Texto em negrito**\n\n\`\`\`sh\n# Exemplo de código\n$PLAN_TXT\`\`\`"
+            DATA_RAW="Este é um comentário de várias linhas usando Markdown.\n\n- Lista item 1\n- Lista item 2\n\n**Texto em negrito**\n\n\`\`\`sh\n# Exemplo de código\n$(echo $PLAN_TXT | jq -sR .)\`\`\`"
 
             curl --request POST "$pr_comment_url" \
               --location \
