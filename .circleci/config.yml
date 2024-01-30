@@ -42,7 +42,7 @@ jobs:
             TG_VERSION=$(cat .terragrunt-version)
             install_tg_version $TG_VERSION
             tgenv use v$TG_VERSION
-            terragrunt plan -out="$(pwd)/plan.out" | tee plan.txt
+            terragrunt plan -out="$(pwd)/plan.out" | sed "s/\x1B\[[0-9;]*[mGKF]//g" | tee plan.txt
 
       - run:
           name: Post Stats to GitHub PR
@@ -60,13 +60,13 @@ jobs:
 
             PLAN_TXT=$(awk '{printf "%s\\n", $0}' plan.txt )
 
-            DATA_RAW=$(echo "<details>\n  <summary>Terragrunt Plan</summary>\n\n```\n$PLAN_TXT\n```\n\n</details>")
+            DATA_RAW="<details>\n  <summary>Terragrunt Plan</summary>\n\n\`\`\`\n$PLAN_TXT\`\`\`\n\n</details>"
             echo $DATA_RAW
 
-            # curl --request POST "$pr_comment_url" \
-            #   --location \
-            #   -u $GH_USER:$GH_TOKEN \
-            #   --header 'Content-Type: application/json' \
-            #   --data-raw '{
-            #     "body": $DATA_RAW
-            #   }'
+            curl --request POST "$pr_comment_url" \
+              --location \
+              -u $GH_USER:$GH_TOKEN \
+              --header 'Content-Type: application/json' \
+              --data-raw '{
+                "body": $DATA_RAW
+              }'
