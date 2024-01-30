@@ -66,4 +66,7 @@ jobs:
               --location \
               -u $GH_USER:$GH_TOKEN \
               --header 'Content-Type: application/json' \
-              --data-raw "$( printf '{"body": %s}' "$(echo $DATA_RAW | jq -sR .)" )"
+              --data-raw '{
+                "body": "Este é um comentário de várias linhas usando Markdown.\n\n- Lista item 1\n- Lista item 2\n\n**Texto em negrito**\n\n```python\n# Exemplo de código\nprint("Hello, World!")\n```"
+              }'
+            # --data-raw "$( printf '{"body": %s}' "$(echo $DATA_RAW | jq -sR .)" )"
