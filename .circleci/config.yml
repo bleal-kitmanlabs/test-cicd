@@ -67,6 +67,4 @@ jobs:
               --location \
               -u $GH_USER:$GH_TOKEN \
               --header 'Content-Type: application/json' \
-              --data-raw '{
-                "body": $DATA_RAW
-              }'
+              --data-raw "{ 'body': '"$DATA_RAW"'}"
