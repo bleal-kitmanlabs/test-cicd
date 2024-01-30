@@ -60,13 +60,15 @@ jobs:
 
             PLAN_TXT=$(awk '{printf "%s\\n", $0}' plan.txt )
 
-            DATA_RAW="<details><br \\><summary>Terragrunt Plan </summary><br \\><br \\> \`\`\` $PLAN_TXT \`\`\` <br><br></details>"
+            # DATA_RAW="<details><br \\><summary>Terragrunt Plan </summary><br \\><br \\> \`\`\` $PLAN_TXT \`\`\` <br><br></details>"
+
+            DATA_RAW="Este é um comentário de várias linhas usando Markdown.\n\n- Lista item 1\n- Lista item 2\n\n**Texto em negrito**\n\n```sh\n# Exemplo de código\n$PLAN_TXT```"
 
             curl --request POST "$pr_comment_url" \
               --location \
               -u $GH_USER:$GH_TOKEN \
               --header 'Content-Type: application/json' \
               --data-raw '{
-                "body": "Este é um comentário de várias linhas usando Markdown.\n\n- Lista item 1\n- Lista item 2\n\n**Texto em negrito**\n\n```sh\n# Exemplo de código\n$(echo $PLAN_TXT)```"
+                "body": $DATA_RAW
               }'
             # --data-raw "$( printf '{"body": %s}' "$(echo $DATA_RAW | jq -sR .)" )"
