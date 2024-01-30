@@ -6,6 +6,14 @@ workflows:
     jobs:
       - plan:
           context: build-deploy
+      - hold:
+          type: approval
+          requires:
+            - plan
+      - apply:
+          context: build-deploy
+          requires:
+            - hold
 
 jobs:
   plan:
@@ -70,3 +78,18 @@ jobs:
               --data-raw "{
                 \"body\": \"$DATA_RAW\"
               }"
+
+  apply:
+    docker:
+      - image: 834914689975.dkr.ecr.eu-west-1.amazonaws.com/builder:latest
+        aws_auth:
+          aws_access_key_id: $KITMAN_IMAGES_AWS_ACCESS_KEY_ID
+          aws_secret_access_key: $KITMAN_IMAGES_AWS_SECRET_KEY
+
+    working_directory: ~/repo
+
+    steps:
+      - run:
+          name: Apply TF Plan
+          command: |
+            echo "TF Plan applied!"
