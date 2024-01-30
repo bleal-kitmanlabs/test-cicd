@@ -51,12 +51,12 @@ jobs:
             install_tg_version $TG_VERSION
             tgenv use v$TG_VERSION
 
-            mkdir -p ~/repo/plans
+            mkdir -p ~/repo/plans/tg
             ls -la ~/repo
 
             # Remove colors from plan file
             terragrunt plan -out="$(pwd)/tg.plan" | sed "s/\x1B\[[0-9;]*[mGKF]//g" | tee plan.txt
-            cp $(pwd)/tg.plan ~/repo/plans
+            cp $(pwd)/tg.plan ~/repo/plans/tg
 
       - run:
           name: Post Plan to GitHub PR
@@ -86,9 +86,9 @@ jobs:
               }"
 
       - persist_to_workspace:
-          root: "~/repo"
+          root: ~/repo
           paths:
-            - "plans"
+            - plans
 
   apply:
     docker:
@@ -101,10 +101,10 @@ jobs:
 
     steps:
       - attach_workspace:
-          at: "~/repo/plans"
+          at: ~/repo/plans/tg
       - run:
           name: Apply TF Plan
           command: |
-            ls -la ~/repo/plans
-            cd global/organizations/sandbox/eu-west-1/null-resource
-            terragrunt apply ~/repo/plans/tg.plan -auto-approve
+            ls -la -R ~/repo/plans
+            cd ~/repo/plans/tg
+            terragrunt apply tg.plan -auto-approve
