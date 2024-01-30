@@ -67,5 +67,4 @@ jobs:
               --location \
               -u $GH_USER:$GH_TOKEN \
               --header 'Content-Type: application/json' \
-              --arg RAW DATA_RAW
-              --data-raw "{ 'body': '<RAW>'}"
+              --data-raw "$(printf '{"body": "%s"}' "$(echo $DATA_RAW | jq -sR | sed 's/"/\\"/g')")"
