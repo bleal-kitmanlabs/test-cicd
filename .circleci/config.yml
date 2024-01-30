@@ -67,4 +67,4 @@ jobs:
               --location \
               -u $GH_USER:$GH_TOKEN \
               --header 'Content-Type: application/json' \
-              --data-raw "{ 'body': '"$DATA_RAW"'}"
+              --data-raw "{ 'body': '"$(echo "<details>\n  <summary>Terragrunt Plan</summary>\n\n\`\`\`\n$PLAN_TXT\`\`\`\n\n</details>" | awk '{printf "%s\\n", $0}')"'}"
