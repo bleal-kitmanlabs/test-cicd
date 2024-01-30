@@ -60,7 +60,7 @@ jobs:
 
             PLAN_TXT=$(awk '{printf "%s\\n", $0}' plan.txt )
 
-            DATA_RAW="<details>\n  <summary>Terragrunt Plan</summary>\n\n\`\`\`\n$PLAN_TXT\`\`\`\n\n</details>"
+            DATA_RAW="<details>\n  <summary>Terragrunt Plan - $(pwd)</summary><br><br>`\`\`\n$PLAN_TXT\`\`\`<br><br></details>"
 
             curl --request POST "$pr_comment_url" \
               --location \
