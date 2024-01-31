@@ -38,9 +38,10 @@ jobs:
           name: Terragrunt Plan - Forcing Path
           command: |
             install_tg_version() {
-              VERSION="v$1"
+              VERSION="$1"
+              V_VERSION="v$1"
               mkdir -p $HOME/.tgenv/versions/$VERSION
-              curl -LO https://github.com/gruntwork-io/terragrunt/releases/download/$VERSION/terragrunt_linux_amd64
+              curl -LO https://github.com/gruntwork-io/terragrunt/releases/download/$V_VERSION/terragrunt_linux_amd64
               mv terragrunt_linux_amd64 $HOME/.tgenv/versions/$VERSION/terragrunt
               chmod +x $HOME/.tgenv/versions/$VERSION/terragrunt
             }
@@ -49,7 +50,7 @@ jobs:
             cd global/organizations/sandbox/eu-west-1/null-resource
             TG_VERSION=$(cat .terragrunt-version)
             install_tg_version $TG_VERSION
-            tgenv use v$TG_VERSION
+            tgenv use $TG_VERSION
 
             mkdir -p ~/repo/plans
             ls -la ~/repo
@@ -117,9 +118,10 @@ jobs:
           name: Apply TF Plan
           command: |
             install_tg_version() {
-              VERSION="v$1"
+              VERSION="$1"
+              V_VERSION="v$1"
               mkdir -p $HOME/.tgenv/versions/$VERSION
-              curl -LO https://github.com/gruntwork-io/terragrunt/releases/download/$VERSION/terragrunt_linux_amd64
+              curl -LO https://github.com/gruntwork-io/terragrunt/releases/download/$V_VERSION/terragrunt_linux_amd64
               mv terragrunt_linux_amd64 $HOME/.tgenv/versions/$VERSION/terragrunt
               chmod +x $HOME/.tgenv/versions/$VERSION/terragrunt
             }
@@ -133,6 +135,6 @@ jobs:
             echo "TG_VERSION env var: $TG_VERSION | version in the file: $(cat .terragrunt-version)"
 
             install_tg_version $TG_VERSION
-            tgenv use v$TG_VERSION
+            tgenv use $TG_VERSION
 
             terragrunt apply tg.plan -auto-approve
