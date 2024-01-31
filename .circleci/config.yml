@@ -83,6 +83,8 @@ jobs:
       - attach_workspace:
           at: /workspace
 
+      - checkout
+
       - run:
           name: Add github.com to known hosts
           command: |
