@@ -136,4 +136,4 @@ jobs:
             install_tg_version $TG_VERSION
             tgenv use $TG_VERSION
 
-            terragrunt apply tg.plan -auto-approve
+            terragrunt apply -auto-approve tg.plan
