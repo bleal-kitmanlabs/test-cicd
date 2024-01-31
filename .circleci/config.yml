@@ -93,7 +93,7 @@ jobs:
       - persist_to_workspace:
           root: .
           paths:
-            - plans
+            - global
 
   apply:
     docker:
@@ -126,8 +126,7 @@ jobs:
               chmod +x $HOME/.tgenv/versions/$VERSION/terragrunt
             }
 
-            ls -la -R /workspace/plans
-            cd /workspace/plans
+            cd /workspace/global/organizations/sandbox/eu-west-1/null-resource
 
             PATH="$HOME/.tfenv/bin:$HOME/.tgenv/bin:$PATH"
             TG_VERSION=$(cat .terragrunt-version)
