@@ -4,11 +4,19 @@ workflows:
   version: 2
   build-and-deploy:
     jobs:
-      - build:
+      - plan:
           context: build-deploy
+      - hold:
+          type: approval
+          requires:
+            - plan
+      - apply:
+          context: build-deploy
+          requires:
+            - hold
 
 jobs:
-  build:
+  plan:
     docker:
       - image: 834914689975.dkr.ecr.eu-west-1.amazonaws.com/builder:latest
         aws_auth:
@@ -30,9 +38,10 @@ jobs:
           name: Terragrunt Plan - Forcing Path
           command: |
             install_tg_version() {
-              VERSION="v$1"
+              VERSION="$1"
+              V_VERSION="v$1"
               mkdir -p $HOME/.tgenv/versions/$VERSION
-              curl -LO https://github.com/gruntwork-io/terragrunt/releases/download/$VERSION/terragrunt_linux_amd64
+              curl -LO https://github.com/gruntwork-io/terragrunt/releases/download/$V_VERSION/terragrunt_linux_amd64
               mv terragrunt_linux_amd64 $HOME/.tgenv/versions/$VERSION/terragrunt
               chmod +x $HOME/.tgenv/versions/$VERSION/terragrunt
             }
@@ -41,5 +50,123 @@ jobs:
             cd global/organizations/sandbox/eu-west-1/null-resource
             TG_VERSION=$(cat .terragrunt-version)
             install_tg_version $TG_VERSION
-            tgenv use v$TG_VERSION
-            terragrunt plan
+            tgenv use $TG_VERSION
+
+            mkdir -p ~/repo/plans
+            ls -la ~/repo
+
+            # Remove colors from plan file
+            terragrunt plan -out="$(pwd)/tg.plan" | sed "s/\x1B\[[0-9;]*[mGKF]//g" | tee plan.txt
+
+
+            cp tg.plan ~/repo/plans
+            cp .terraform-version ~/repo/plans
+            cp .terragrunt-version ~/repo/plans
+
+      - run:
+          name: Post Plan to GitHub PR
+          command: |
+            set -x
+            cd global/organizations/sandbox/eu-west-1/null-resource
+
+            pr_response=$(curl --location --request GET "https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/pulls?head=$CIRCLE_PROJECT_USERNAME:$CIRCLE_BRANCH&state=open" \
+            -u $GH_USER:$GH_TOKEN)
+
+            if [ $(echo $pr_response | jq length) -eq 0 ]; then
+              echo "No PR found to update"
+            else
+              pr_comment_url=$(echo $pr_response | jq -r ".[]._links.comments.href")
+            fi
+
+            PLAN_TXT=$(cat plan.txt | jq -sR .)
+
+            DATA_RAW="<details>\n<summary>Terragrunt Plan - $(pwd)</summary>\n\n\`\`\`sh\n${PLAN_TXT:1:-1}\`\`\` \n</details>"
+
+            curl --request POST "$pr_comment_url" \
+              --location \
+              -u $GH_USER:$GH_TOKEN \
+              --header 'Content-Type: application/json' \
+              --data-raw "{
+                \"body\": \"$DATA_RAW\"
+              }"
+
+      - persist_to_workspace:
+          root: .
+          paths:
+            - global
+
+  apply:
+    docker:
+      - image: 834914689975.dkr.ecr.eu-west-1.amazonaws.com/builder:latest
+        aws_auth:
+          aws_access_key_id: $KITMAN_IMAGES_AWS_ACCESS_KEY_ID
+          aws_secret_access_key: $KITMAN_IMAGES_AWS_SECRET_KEY
+
+    working_directory: ~/repo
+
+    steps:
+      - attach_workspace:
+          at: /workspace
+
+      - run:
+          name: Add github.com to known hosts
+          command: |
+            mkdir ~/.ssh
+            ssh-keyscan github.com >> ~/.ssh/known_hosts
+
+      - run:
+          name: Install tfenv and tgenv
+          command: |
+            git clone --depth=1 https://github.com/tfutils/tfenv.git $HOME/.tfenv
+            git clone https://github.com/cunymatthieu/tgenv.git $HOME/.tgenv
+
+      - run:
+          name: Apply TF Plan
+          command: |
+            install_tg_version() {
+              VERSION="$1"
+              V_VERSION="v$1"
+              mkdir -p $HOME/.tgenv/versions/$VERSION
+              curl -LO https://github.com/gruntwork-io/terragrunt/releases/download/$V_VERSION/terragrunt_linux_amd64
+              mv terragrunt_linux_amd64 $HOME/.tgenv/versions/$VERSION/terragrunt
+              chmod +x $HOME/.tgenv/versions/$VERSION/terragrunt
+            }
+
+            cd /workspace/global/organizations/sandbox/eu-west-1/null-resource
+
+            PATH="$HOME/.tfenv/bin:$HOME/.tgenv/bin:$PATH"
+            TG_VERSION=$(cat .terragrunt-version)
+
+            echo "TG_VERSION env var: $TG_VERSION | version in the file: $(cat .terragrunt-version)"
+
+            install_tg_version $TG_VERSION
+            tgenv use $TG_VERSION
+
+            terragrunt apply -auto-approve tg.plan | tee apply.txt
+
+      - run:
+          name: Post Apply to GitHub PR
+          command: |
+            set -x
+            cd /workspace/global/organizations/sandbox/eu-west-1/null-resource
+
+            pr_response=$(curl --location --request GET "https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/pulls?head=$CIRCLE_PROJECT_USERNAME:$CIRCLE_BRANCH&state=open" \
+            -u $GH_USER:$GH_TOKEN)
+
+            if [ $(echo $pr_response | jq length) -eq 0 ]; then
+              echo "No PR found to update"
+            else
+              pr_comment_url=$(echo $pr_response | jq -r ".[]._links.comments.href")
+            fi
+
+            APPLY_TXT=$(cat apply.txt | jq -sR .)
+
+            DATA_RAW="<details>\n<summary>Terragrunt Apply - $(pwd)</summary>\n\n\`\`\`sh\n${APPLY_TXT:1:-1}\`\`\` \n</details>"
+
+            curl --request POST "$pr_comment_url" \
+              --location \
+              -u $GH_USER:$GH_TOKEN \
+              --header 'Content-Type: application/json' \
+              --data-raw "{
+                \"body\": \"$DATA_RAW\"
+              }"
