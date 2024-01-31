@@ -51,12 +51,16 @@ jobs:
             install_tg_version $TG_VERSION
             tgenv use v$TG_VERSION
 
-            mkdir -p ~/repo/plans/tg
+            mkdir -p ~/repo/plans
             ls -la ~/repo
 
             # Remove colors from plan file
             terragrunt plan -out="$(pwd)/tg.plan" | sed "s/\x1B\[[0-9;]*[mGKF]//g" | tee plan.txt
-            cp $(pwd)/tg.plan ~/repo/plans/tg
+
+
+            cp tg.plan ~/repo/plans
+            cp .terraform-version ~/repo/plans
+            cp .terragrunt-version ~/repo/plans
 
       - run:
           name: Post Plan to GitHub PR
@@ -86,7 +90,7 @@ jobs:
               }"
 
       - persist_to_workspace:
-          root: ~/repo
+          root: .
           paths:
             - plans
 
@@ -101,10 +105,34 @@ jobs:
 
     steps:
       - attach_workspace:
-          at: ~/repo/plans/tg
+          at: /workspace
+
+      - run:
+          name: Install tfenv and tgenv
+          command: |
+            git clone --depth=1 https://github.com/tfutils/tfenv.git $HOME/.tfenv
+            git clone https://github.com/cunymatthieu/tgenv.git $HOME/.tgenv
+
       - run:
           name: Apply TF Plan
           command: |
-            ls -la -R ~/repo/plans
-            cd ~/repo/plans/tg
+            install_tg_version() {
+              VERSION="v$1"
+              mkdir -p $HOME/.tgenv/versions/$VERSION
+              curl -LO https://github.com/gruntwork-io/terragrunt/releases/download/$VERSION/terragrunt_linux_amd64
+              mv terragrunt_linux_amd64 $HOME/.tgenv/versions/$VERSION/terragrunt
+              chmod +x $HOME/.tgenv/versions/$VERSION/terragrunt
+            }
+
+            ls -la -R /workspace/plans
+            cd /workspace/plans
+
+            PATH="$HOME/.tfenv/bin:$HOME/.tgenv/bin:$PATH"
+            TG_VERSION=$(cat .terragrunt-version)
+
+            echo "TG_VERSION env var: $TG_VERSION | version in the file: $(cat .terragrunt-version)"
+
+            install_tg_version $TG_VERSION
+            tgenv use v$TG_VERSION
+
             terragrunt apply tg.plan -auto-approve
