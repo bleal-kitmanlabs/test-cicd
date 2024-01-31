@@ -36,32 +36,7 @@ jobs:
 
       - run:
           name: Terragrunt Plan - Forcing Path
-          command: |
-            install_tg_version() {
-              VERSION="$1"
-              V_VERSION="v$1"
-              mkdir -p $HOME/.tgenv/versions/$VERSION
-              curl -LO https://github.com/gruntwork-io/terragrunt/releases/download/$V_VERSION/terragrunt_linux_amd64
-              mv terragrunt_linux_amd64 $HOME/.tgenv/versions/$VERSION/terragrunt
-              chmod +x $HOME/.tgenv/versions/$VERSION/terragrunt
-            }
-
-            PATH="$HOME/.tfenv/bin:$HOME/.tgenv/bin:$PATH"
-            cd global/organizations/sandbox/eu-west-1/null-resource
-            TG_VERSION=$(cat .terragrunt-version)
-            install_tg_version $TG_VERSION
-            tgenv use $TG_VERSION
-
-            mkdir -p ~/repo/plans
-            ls -la ~/repo
-
-            # Remove colors from plan file
-            terragrunt plan -out="$(pwd)/tg.plan" | sed "s/\x1B\[[0-9;]*[mGKF]//g" | tee plan.txt
-
-
-            cp tg.plan ~/repo/plans
-            cp .terraform-version ~/repo/plans
-            cp .terragrunt-version ~/repo/plans
+          command: ./.circleci/plan.sh
 
       - run:
           name: Post Plan to GitHub PR
@@ -122,34 +97,13 @@ jobs:
 
       - run:
           name: Apply TF Plan
-          command: |
-            install_tg_version() {
-              VERSION="$1"
-              V_VERSION="v$1"
-              mkdir -p $HOME/.tgenv/versions/$VERSION
-              curl -LO https://github.com/gruntwork-io/terragrunt/releases/download/$V_VERSION/terragrunt_linux_amd64
-              mv terragrunt_linux_amd64 $HOME/.tgenv/versions/$VERSION/terragrunt
-              chmod +x $HOME/.tgenv/versions/$VERSION/terragrunt
-            }
-
-            cd /workspace/global/organizations/sandbox/eu-west-1/null-resource
-
-            PATH="$HOME/.tfenv/bin:$HOME/.tgenv/bin:$PATH"
-            TG_VERSION=$(cat .terragrunt-version)
-
-            echo "TG_VERSION env var: $TG_VERSION | version in the file: $(cat .terragrunt-version)"
-
-            install_tg_version $TG_VERSION
-            tgenv use $TG_VERSION
-
-            terragrunt apply -auto-approve tg.plan | tee apply.txt
+          command: pwd && ls -la && cd ~/repo && ./.circleci/apply.sh
 
       - run:
           name: Post Apply to GitHub PR
           command: |
             set -x
             cd /workspace/global/organizations/sandbox/eu-west-1/null-resource
-
             pr_response=$(curl --location --request GET "https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/pulls?head=$CIRCLE_PROJECT_USERNAME:$CIRCLE_BRANCH&state=open" \
             -u $GH_USER:$GH_TOKEN)
 
@@ -160,9 +114,7 @@ jobs:
             fi
 
             APPLY_TXT=$(cat apply.txt | jq -sR .)
-
             DATA_RAW="<details>\n<summary>Terragrunt Apply - $(pwd)</summary>\n\n\`\`\`sh\n${APPLY_TXT:1:-1}\`\`\` \n</details>"
-
             curl --request POST "$pr_comment_url" \
               --location \
               -u $GH_USER:$GH_TOKEN \
